@@ -12,10 +12,11 @@ const AddJobPage = ({ addJobSubmit }) => {
   const [companyDescription, setCompanyDescription] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [apiPassword, setApiPassword] = useState('');
 
   const navigate = useNavigate();
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
 
     const newJob = {
@@ -24,19 +25,27 @@ const AddJobPage = ({ addJobSubmit }) => {
       location,
       description,
       salary,
+      apiPassword,
       company: {
         name: companyName,
         description: companyDescription,
         contactEmail,
-        contactPhone,
+        contactPhone
       },
     };
+    console.log('Submitting job data:', newJob); // Log the job data for debugging
 
-    addJobSubmit(newJob);
-
-    toast.success('Job Added Successfully');
-
-    return navigate('/jobs');
+    try {
+      await addJobSubmit(newJob);
+      toast.success('Job Added Successfully');
+      navigate('/jobs');
+    } catch (error) {
+      if (error.message === 'Invalid api password') {
+        toast.error('Invalid API Password');
+      } else {
+        toast.error('Failed to add job');
+      }
+    }
   };
 
   return (
@@ -217,6 +226,25 @@ const AddJobPage = ({ addJobSubmit }) => {
                 placeholder='Optional phone for applicants'
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
+              />
+            </div>
+
+            <div className='mb-4'>
+              <label
+                htmlFor='api_password'
+                className='block text-gray-700 font-bold mb-2'
+              >
+                API Password
+              </label>
+              <input
+                type='password'
+                id='api_password'
+                name='api_password'
+                className='border rounded w-full py-2 px-3'
+                placeholder='Enter API password'
+                required
+                value={apiPassword}
+                onChange={(e) => setApiPassword(e.target.value)}
               />
             </div>
 

@@ -10,16 +10,15 @@ const EditJobPage = ({ updateJobSubmit }) => {
   const [description, setDescription] = useState(job.description);
   const [salary, setSalary] = useState(job.salary);
   const [companyName, setCompanyName] = useState(job.company.name);
-  const [companyDescription, setCompanyDescription] = useState(
-    job.company.description
-  );
+  const [companyDescription, setCompanyDescription] = useState(job.company.description);
   const [contactEmail, setContactEmail] = useState(job.company.contactEmail);
   const [contactPhone, setContactPhone] = useState(job.company.contactPhone);
+  const [apiPassword, setApiPassword] = useState('');
 
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
 
     const updatedJob = {
@@ -29,6 +28,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
       location,
       description,
       salary,
+      apiPassword,
       company: {
         name: companyName,
         description: companyDescription,
@@ -37,11 +37,17 @@ const EditJobPage = ({ updateJobSubmit }) => {
       },
     };
 
-    updateJobSubmit(updatedJob);
-
-    toast.success('Job Updated Successfully');
-
-    return navigate(`/jobs/${id}`);
+    try {
+      await updateJobSubmit(updatedJob);
+      toast.success('Job Updated Successfully');
+      navigate(`/jobs/${id}`);
+    } catch (error) {
+      if (error.message === 'Invalid api password') {
+        toast.error('Invalid API Password');
+      } else {
+        toast.error('Failed to update job');
+      }
+    }
   };
 
   return (
@@ -49,15 +55,10 @@ const EditJobPage = ({ updateJobSubmit }) => {
       <div className='container m-auto max-w-2xl py-24'>
         <div className='bg-white px-6 py-8 mb-4 shadow-md rounded-md border m-4 md:m-0'>
           <form onSubmit={submitForm}>
-            <h2 className='text-3xl text-center font-semibold mb-6'>
-              Update Job
-            </h2>
+            <h2 className='text-3xl text-center font-semibold mb-6'>Update Job</h2>
 
             <div className='mb-4'>
-              <label
-                htmlFor='type'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='type' className='block text-gray-700 font-bold mb-2'>
                 Job Type
               </label>
               <select
@@ -76,9 +77,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             </div>
 
             <div className='mb-4'>
-              <label className='block text-gray-700 font-bold mb-2'>
-                Job Listing Name
-              </label>
+              <label className='block text-gray-700 font-bold mb-2'>Job Listing Name</label>
               <input
                 type='text'
                 id='title'
@@ -91,10 +90,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
               />
             </div>
             <div className='mb-4'>
-              <label
-                htmlFor='description'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='description' className='block text-gray-700 font-bold mb-2'>
                 Description
               </label>
               <textarea
@@ -109,10 +105,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             </div>
 
             <div className='mb-4'>
-              <label
-                htmlFor='type'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='type' className='block text-gray-700 font-bold mb-2'>
                 Salary
               </label>
               <select
@@ -138,9 +131,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             </div>
 
             <div className='mb-4'>
-              <label className='block text-gray-700 font-bold mb-2'>
-                Location
-              </label>
+              <label className='block text-gray-700 font-bold mb-2'>Location</label>
               <input
                 type='text'
                 id='location'
@@ -156,10 +147,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             <h3 className='text-2xl mb-5'>Company Info</h3>
 
             <div className='mb-4'>
-              <label
-                htmlFor='company'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='company' className='block text-gray-700 font-bold mb-2'>
                 Company Name
               </label>
               <input
@@ -174,10 +162,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             </div>
 
             <div className='mb-4'>
-              <label
-                htmlFor='company_description'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='company_description' className='block text-gray-700 font-bold mb-2'>
                 Company Description
               </label>
               <textarea
@@ -192,10 +177,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
             </div>
 
             <div className='mb-4'>
-              <label
-                htmlFor='contact_email'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='contact_email' className='block text-gray-700 font-bold mb-2'>
                 Contact Email
               </label>
               <input
@@ -210,10 +192,7 @@ const EditJobPage = ({ updateJobSubmit }) => {
               />
             </div>
             <div className='mb-4'>
-              <label
-                htmlFor='contact_phone'
-                className='block text-gray-700 font-bold mb-2'
-              >
+              <label htmlFor='contact_phone' className='block text-gray-700 font-bold mb-2'>
                 Contact Phone
               </label>
               <input
@@ -224,6 +203,22 @@ const EditJobPage = ({ updateJobSubmit }) => {
                 placeholder='Optional phone for applicants'
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
+              />
+            </div>
+
+            <div className='mb-4'>
+              <label htmlFor='api_password' className='block text-gray-700 font-bold mb-2'>
+                API Password
+              </label>
+              <input
+                type='password'
+                id='api_password'
+                name='api_password'
+                className='border rounded w-full py-2 px-3'
+                placeholder='Enter API password'
+                required
+                value={apiPassword}
+                onChange={(e) => setApiPassword(e.target.value)}
               />
             </div>
 
@@ -241,4 +236,5 @@ const EditJobPage = ({ updateJobSubmit }) => {
     </section>
   );
 };
+
 export default EditJobPage;

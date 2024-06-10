@@ -14,36 +14,78 @@ import EditJobPage from './pages/EditJobPage';
 
 const App = () => {
   // Add New Job
-  const addJob = async (newJob) => {
-    const res = await fetch('/api/jobs', {
+  const addJob = (newJob) => {
+    return fetch('/api/jobs', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(newJob),
-    });
-    return;
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 403) {
+            throw new Error('Invalid api password');
+          } else {
+            throw new Error('Failed to add job');
+          }
+        }
+        return response.json();
+      });
   };
 
   // Delete Job
   const deleteJob = async (id) => {
-    const res = await fetch(`/api/jobs/${id}`, {
-      method: 'DELETE',
-    });
-    return;
+    try {
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.status === 403) {
+        throw new Error('Invalid API password');
+      }
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to delete job');
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete job');
+    }
   };
 
   // Update Job
   const updateJob = async (job) => {
-    const res = await fetch(`/api/jobs/${job.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(job),
-    });
-    return;
+    try {
+      const res = await fetch(`/api/jobs/${job.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          // Pass the API password in the headers
+          'API-Password': job.apiPassword,
+        },
+        body: JSON.stringify(job),
+      });
+
+      if (res.status === 403) {
+        throw new Error('Invalid api password');
+      }
+
+      if (!res.ok) {
+        throw new Error('Failed to update job');
+      }
+
+      // Optionally, you can handle other status codes here
+
+      return res.json(); // Return the response data if needed
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
+
 
   const router = createBrowserRouter(
     createRoutesFromElements(

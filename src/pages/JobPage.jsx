@@ -1,25 +1,37 @@
+import React, { useState } from 'react';
 import { useParams, useLoaderData, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaMapMarker } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import ApiPasswordPopup from '../components/ApiPasswordPopup';
 
 const JobPage = ({ deleteJob }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { _id } = useParams();
   const job = useLoaderData();
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false);
 
-  const onDeleteClick = (jobId) => {
-    const confirm = window.confirm(
-      'Are you sure you want to delete this listing?'
-    );
+  const onDeleteClick = () => {
+    setShowPasswordPopup(true);
+  };
 
+  const handleDelete = async (password) => {
+    setShowPasswordPopup(false);
+
+    const confirm = window.confirm('Are you sure you want to delete this listing?');
     if (!confirm) return;
 
-    deleteJob(jobId);
+    try {
+      await deleteJob(job._id, password);
+      toast.success('Job deleted successfully');
+      navigate('/jobs');
+    } catch (error) {
+      toast.error('Failed to delete job. Incorrect API password.');
+    }
+  };
 
-    toast.success('Job deleted successfully');
-
-    navigate('/jobs');
+  const handleCancelDelete = () => {
+    setShowPasswordPopup(false);
   };
 
   return (
@@ -91,13 +103,13 @@ const JobPage = ({ deleteJob }) => {
               <div className='bg-white p-6 rounded-lg shadow-md mt-6'>
                 <h3 className='text-xl font-bold mb-6'>Manage Job</h3>
                 <Link
-                  to={`/edit-job/${job.id}`}
+                  to={`/edit-job/${job._id}`}
                   className='bg-indigo-500 hover:bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block'
                 >
                   Edit Job
                 </Link>
                 <button
-                  onClick={() => onDeleteClick(job.id)}
+                  onClick={() => onDeleteClick(job._id)}
                   className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block'
                 >
                   Delete Job
@@ -107,6 +119,7 @@ const JobPage = ({ deleteJob }) => {
           </div>
         </div>
       </section>
+      {showPasswordPopup && <ApiPasswordPopup onDelete={handleDelete} onCancel={handleCancelDelete} />}
     </>
   );
 };
