@@ -35,10 +35,14 @@ const App = () => {
   };
 
   // Delete Job
-  const deleteJob = async (id) => {
+  const deleteJob = async (id, password) => {
     try {
       const res = await fetch(`https://react-jobs-backend.onrender.com/jobs/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ apiPassword: password }),
       });
 
       if (res.status === 403) {
